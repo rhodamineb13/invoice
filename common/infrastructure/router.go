@@ -3,6 +3,9 @@ package infrastructure
 import (
 	"context"
 	"errors"
+	"invoice/handler"
+	"invoice/repository"
+	"invoice/service"
 	"log"
 	"net/http"
 	"os/signal"
@@ -12,13 +15,7 @@ import (
 )
 
 func Run() {
-	r := gin.Default()
-	r.Group("/invoices")
-	r.GET("/")
-	r.GET("/:id")
-	r.POST("/")
-	r.PUT("/")
-
+	r := newRouter()
 	srv := http.Server{
 		Addr:    ":8080",
 		Handler: r,
@@ -29,6 +26,21 @@ func Run() {
 		}
 	}()
 	gracefulShutdown(&srv)
+}
+
+func newRouter() *gin.Engine {
+	invHandler := handler.NewInvoiceHandler(service.NewInvoiceService(repository.NewInvoiceRepository(newDBConnection())))
+
+	r := gin.Default()
+	r.Use()
+
+	inv := r.Group("/invoices")
+	inv.GET("/", invHandler.GetAllInvoice)
+	inv.GET("/:id", invHandler.GetInvoiceByID)
+	inv.POST("/", invHandler.NewInvoice)
+	inv.PUT("/", invHandler.EditInvoice)
+
+	return r
 }
 
 func gracefulShutdown(srv *http.Server) {

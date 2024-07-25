@@ -17,7 +17,7 @@ type InvoiceService interface {
 	EditInvoice(context.Context, *dto.InvoiceDetail) error
 }
 
-func newInvoiceService(inv InvoiceRepository) InvoiceService {
+func NewInvoiceService(inv repository.InvoiceRepository) InvoiceService {
 	return &invoiceService{
 		inv,
 	}

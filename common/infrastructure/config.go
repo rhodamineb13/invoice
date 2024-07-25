@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-type ConfigEnv struct {
+type configEnv struct {
 	Host          string `mapstructure:"DB_HOST"`
 	Port          string `mapstructure:"DB_PORT"`
 	User          string `mapstructure:"DB_USER"`
@@ -19,8 +19,8 @@ type ConfigEnv struct {
 
 var config = NewConfig()
 
-func NewConfig() *ConfigEnv {
-	var conf *ConfigEnv
+func NewConfig() *configEnv {
+	var conf *configEnv
 
 	viper.AddConfigPath(".")
 	viper.SetConfigName(".env")
