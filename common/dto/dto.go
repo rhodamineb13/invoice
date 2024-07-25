@@ -10,6 +10,8 @@ type InvoiceListsDTO struct {
 	Customer   string    `json:"customer"`
 	DueDate    time.Time `json:"due_date"`
 	Status     string    `json:"status"`
+	Page       int
+	Limit      int
 }
 
 type InvoiceDetailDTO struct {

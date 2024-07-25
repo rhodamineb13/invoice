@@ -1,16 +1,8 @@
 # Invoice Application
 
-To run the application you can use
+If you want to install this app, clone the repository to your computer using `git clone github.com/rhodamineb13/invoice`
 
-`docker-compose up`
+To run the application you can use `docker-compose up` or you can just use `go run .` if you don't have Docker installed.
 
-Or you can just use 
-
-`go run .`
-
-As it runs all programs inside the package
-
-To run the test
-
-`go test ./... -v`
+To run the test `go test ./... -v`
 
