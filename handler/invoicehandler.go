@@ -45,7 +45,7 @@ func (i *InvoiceHandler) GetInvoiceByID(c *gin.Context) {
 }
 
 func (i *InvoiceHandler) NewInvoice(c *gin.Context) {
-	var inv *dto.InvoiceDetail
+	var inv *dto.InvoiceDetailDTO
 
 	if err := c.ShouldBindJSON(&inv); err != nil {
 		_ = c.Error(err)
@@ -64,7 +64,7 @@ func (i *InvoiceHandler) NewInvoice(c *gin.Context) {
 }
 
 func (i *InvoiceHandler) EditInvoice(c *gin.Context) {
-	var inv *dto.InvoiceDetail
+	var inv *dto.InvoiceDetailDTO
 
 	if err := c.ShouldBindJSON(&inv); err != nil {
 		_ = c.Error(err)

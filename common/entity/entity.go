@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-type InvoiceLists struct {
+type InvoiceListsDB struct {
 	ID         int       `db:"id"`
 	IssueDate  time.Time `db:"issue_date"`
 	Subject    string    `db:"subject"`
@@ -12,7 +12,7 @@ type InvoiceLists struct {
 	Status     string    `db:"status"`
 }
 
-type Items struct {
+type ItemsDB struct {
 	ID        int     `db:"id"`
 	Item      string  `db:"item"`
 	Qty       int     `db:"qty"`
@@ -20,6 +20,21 @@ type Items struct {
 	Amount    float32 `db:"amount"`
 }
 
-type InvoiceDetail struct {
-	ID int `db:"id"`
+type InvoiceSummaryDB struct {
+	TotalItems int     `json:"total_item(s)"`
+	SubTotal   float32 `json:"subtotal"`
+	Tax        int     `json:"tax"`
+	GrandTotal float32 `json:"grand_total"`
+}
+
+type InvoiceDetailDB struct {
+	ID         int       `db:"id"`
+	IssueDate  time.Time `db:"issue_date"`
+	Subject    string    `db:"subject"`
+	TotalItems int       `db:"total_items"`
+	Customer   string    `db:"customer"`
+	DueDate    time.Time `db:"due_date"`
+	Address    string    `db:"address"`
+	Summary    InvoiceSummaryDB
+	Items      []ItemsDB
 }

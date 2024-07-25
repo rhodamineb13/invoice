@@ -15,7 +15,7 @@ type InvoiceService struct {
 }
 
 // AddInvoice provides a mock function with given fields: _a0, _a1
-func (_m *InvoiceService) AddInvoice(_a0 context.Context, _a1 *dto.InvoiceDetail) error {
+func (_m *InvoiceService) AddInvoice(_a0 context.Context, _a1 *dto.InvoiceDetailDTO) error {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
@@ -23,7 +23,7 @@ func (_m *InvoiceService) AddInvoice(_a0 context.Context, _a1 *dto.InvoiceDetail
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *dto.InvoiceDetail) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.InvoiceDetailDTO) error); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
@@ -33,7 +33,7 @@ func (_m *InvoiceService) AddInvoice(_a0 context.Context, _a1 *dto.InvoiceDetail
 }
 
 // EditInvoice provides a mock function with given fields: _a0, _a1
-func (_m *InvoiceService) EditInvoice(_a0 context.Context, _a1 *dto.InvoiceDetail) error {
+func (_m *InvoiceService) EditInvoice(_a0 context.Context, _a1 *dto.InvoiceDetailDTO) error {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
@@ -41,7 +41,7 @@ func (_m *InvoiceService) EditInvoice(_a0 context.Context, _a1 *dto.InvoiceDetai
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *dto.InvoiceDetail) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.InvoiceDetailDTO) error); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
@@ -51,23 +51,23 @@ func (_m *InvoiceService) EditInvoice(_a0 context.Context, _a1 *dto.InvoiceDetai
 }
 
 // InvoiceByID provides a mock function with given fields: _a0, _a1
-func (_m *InvoiceService) InvoiceByID(_a0 context.Context, _a1 int) (*dto.InvoiceDetail, error) {
+func (_m *InvoiceService) InvoiceByID(_a0 context.Context, _a1 int) (*dto.InvoiceDetailDTO, error) {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for InvoiceByID")
 	}
 
-	var r0 *dto.InvoiceDetail
+	var r0 *dto.InvoiceDetailDTO
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) (*dto.InvoiceDetail, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int) (*dto.InvoiceDetailDTO, error)); ok {
 		return rf(_a0, _a1)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int) *dto.InvoiceDetail); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int) *dto.InvoiceDetailDTO); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*dto.InvoiceDetail)
+			r0 = ret.Get(0).(*dto.InvoiceDetailDTO)
 		}
 	}
 
@@ -81,23 +81,23 @@ func (_m *InvoiceService) InvoiceByID(_a0 context.Context, _a1 int) (*dto.Invoic
 }
 
 // InvoiceIndex provides a mock function with given fields: _a0
-func (_m *InvoiceService) InvoiceIndex(_a0 context.Context) ([]dto.InvoiceLists, error) {
+func (_m *InvoiceService) InvoiceIndex(_a0 context.Context) ([]dto.InvoiceListsDTO, error) {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
 		panic("no return value specified for InvoiceIndex")
 	}
 
-	var r0 []dto.InvoiceLists
+	var r0 []dto.InvoiceListsDTO
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]dto.InvoiceLists, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) ([]dto.InvoiceListsDTO, error)); ok {
 		return rf(_a0)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []dto.InvoiceLists); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) []dto.InvoiceListsDTO); ok {
 		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]dto.InvoiceLists)
+			r0 = ret.Get(0).([]dto.InvoiceListsDTO)
 		}
 	}
 

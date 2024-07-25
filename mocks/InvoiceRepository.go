@@ -15,23 +15,23 @@ type InvoiceRepository struct {
 }
 
 // GetInvoice provides a mock function with given fields: _a0
-func (_m *InvoiceRepository) GetInvoice(_a0 context.Context) ([]entity.InvoiceLists, error) {
+func (_m *InvoiceRepository) GetInvoice(_a0 context.Context) ([]entity.InvoiceListsDB, error) {
 	ret := _m.Called(_a0)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetInvoice")
 	}
 
-	var r0 []entity.InvoiceLists
+	var r0 []entity.InvoiceListsDB
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) ([]entity.InvoiceLists, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) ([]entity.InvoiceListsDB, error)); ok {
 		return rf(_a0)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) []entity.InvoiceLists); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) []entity.InvoiceListsDB); ok {
 		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]entity.InvoiceLists)
+			r0 = ret.Get(0).([]entity.InvoiceListsDB)
 		}
 	}
 
@@ -45,7 +45,7 @@ func (_m *InvoiceRepository) GetInvoice(_a0 context.Context) ([]entity.InvoiceLi
 }
 
 // InsertInvoice provides a mock function with given fields: _a0, _a1
-func (_m *InvoiceRepository) InsertInvoice(_a0 context.Context, _a1 *entity.InvoiceDetail) error {
+func (_m *InvoiceRepository) InsertInvoice(_a0 context.Context, _a1 *entity.InvoiceDetailDB) error {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
@@ -53,7 +53,7 @@ func (_m *InvoiceRepository) InsertInvoice(_a0 context.Context, _a1 *entity.Invo
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entity.InvoiceDetail) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *entity.InvoiceDetailDB) error); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
@@ -63,23 +63,23 @@ func (_m *InvoiceRepository) InsertInvoice(_a0 context.Context, _a1 *entity.Invo
 }
 
 // SelectInvoice provides a mock function with given fields: _a0, _a1
-func (_m *InvoiceRepository) SelectInvoice(_a0 context.Context, _a1 int) (*entity.InvoiceDetail, error) {
+func (_m *InvoiceRepository) SelectInvoice(_a0 context.Context, _a1 int) (*entity.InvoiceDetailDB, error) {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SelectInvoice")
 	}
 
-	var r0 *entity.InvoiceDetail
+	var r0 *entity.InvoiceDetailDB
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int) (*entity.InvoiceDetail, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int) (*entity.InvoiceDetailDB, error)); ok {
 		return rf(_a0, _a1)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int) *entity.InvoiceDetail); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int) *entity.InvoiceDetailDB); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entity.InvoiceDetail)
+			r0 = ret.Get(0).(*entity.InvoiceDetailDB)
 		}
 	}
 
@@ -93,7 +93,7 @@ func (_m *InvoiceRepository) SelectInvoice(_a0 context.Context, _a1 int) (*entit
 }
 
 // UpdateInvoice provides a mock function with given fields: _a0, _a1
-func (_m *InvoiceRepository) UpdateInvoice(_a0 context.Context, _a1 *entity.InvoiceDetail) error {
+func (_m *InvoiceRepository) UpdateInvoice(_a0 context.Context, _a1 *entity.InvoiceDetailDB) error {
 	ret := _m.Called(_a0, _a1)
 
 	if len(ret) == 0 {
@@ -101,7 +101,7 @@ func (_m *InvoiceRepository) UpdateInvoice(_a0 context.Context, _a1 *entity.Invo
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *entity.InvoiceDetail) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *entity.InvoiceDetailDB) error); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)
