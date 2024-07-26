@@ -34,13 +34,12 @@ func (in *invoiceService) InvoiceIndex(ctx context.Context, page int, limit int)
 		listsDTO := []dto.InvoiceListsDTO{}
 		for _, invoice := range lists {
 			invDTO := dto.InvoiceListsDTO{
-				ID:         invoice.ID,
-				IssueDate:  invoice.IssueDate,
-				Subject:    invoice.Subject,
-				TotalItems: invoice.TotalItems,
-				Customer:   invoice.CustomerName,
-				DueDate:    invoice.DueDate,
-				Status:     invoice.Status,
+				ID:        invoice.ID,
+				IssueDate: invoice.IssueDate,
+				Subject:   invoice.Subject,
+				Customer:  invoice.CustomerName,
+				DueDate:   invoice.DueDate,
+				Status:    invoice.Status,
 			}
 			listsDTO = append(listsDTO, invDTO)
 		}

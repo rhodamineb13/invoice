@@ -37,11 +37,19 @@ type InvoiceDetailDB struct {
 	ID           int       `db:"id"`
 	IssueDate    time.Time `db:"issue_date"`
 	Subject      string    `db:"subject"`
-	CustomerID   int       `db:"cust_id"`
 	CustomerName string    `db:"cust_name"`
 	Address      string    `db:"address"`
 	DueDate      time.Time `db:"due_date"`
-	TotalItems   int       `db:"total_item"`
+	TotalItems   int       `db:"total_items"`
 	SubTotal     float32   `db:"subtotal"`
 	GrandTotal   float32   `db:"grand_total"`
+}
+
+type InvoiceGetDB struct {
+	ID           int       `db:"id"`
+	IssueDate    time.Time `db:"issue_date"`
+	Subject      string    `db:"subject"`
+	CustomerName string    `db:"cust_name"`
+	DueDate      time.Time `db:"due_date"`
+	Status       string    `db:"status"`
 }
