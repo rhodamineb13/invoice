@@ -30,7 +30,7 @@ func NewInvoiceService(inv repository.InvoiceRepository) InvoiceService {
 
 func (in *invoiceService) InvoiceIndex(ctx context.Context, page int, limit int) ([]dto.InvoiceListsDTO, error) {
 	lists, err := in.invoiceRepository.GetInvoice(ctx, page, limit)
-	if err != nil {
+	if err == nil {
 		listsDTO := []dto.InvoiceListsDTO{}
 		for _, invoice := range lists {
 			invDTO := dto.InvoiceListsDTO{
@@ -38,7 +38,7 @@ func (in *invoiceService) InvoiceIndex(ctx context.Context, page int, limit int)
 				IssueDate:  invoice.IssueDate,
 				Subject:    invoice.Subject,
 				TotalItems: invoice.TotalItems,
-				Customer:   invoice.Customer,
+				Customer:   invoice.CustomerName,
 				DueDate:    invoice.DueDate,
 				Status:     invoice.Status,
 			}

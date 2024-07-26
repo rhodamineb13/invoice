@@ -28,22 +28,49 @@ func NewInvoiceRepository(db *sqlx.DB) InvoiceRepository {
 }
 
 func (in *invoiceRepository) GetInvoice(ctx context.Context, page int, limit int) ([]entity.InvoiceListsDB, error) {
-	return nil, nil
+	var invList []entity.InvoiceListsDB
+	offset := limit * (page - 1)
+
+	queryGet := `SELECT in.id, in.issue_date, in.subject, it.count, c.name, in.due_date, in.status
+	FROM invoice in
+	INNER JOIN (SELECT invoice_id, COUNT(items.invoice_id) AS count from items GROUP BY invoice_id) it on in.id = it.invoice_id
+	INNER JOIN customer c ON in.customer_id = c.id
+	ORDER BY id DESC
+	LIMIT $ OFFSET $;`
+
+	err := in.db.GetContext(ctx, invList, queryGet, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	return invList, nil
 }
 
 func (in *invoiceRepository) SelectInvoice(ctx context.Context, id int) (*entity.InvoiceDetailDB, error) {
-	return nil, nil
+	var invDetail *entity.InvoiceDetailDB
+
+	querySelect := `SELECT in.id, in.issue_date, in.subject, c.name AS cust_name, c.address, in.due_date, COUNT(o.ID) as total_item, SUM(o.qty*o.amount) as subtotal, subtotal*0.9 as grand_total
+	FROM invoice in
+	INNER JOIN (SELECT * FROM order WHERE invoice_id = $) o
+	INNER JOIN customer c ON in.customer_id = c.id;`
+
+	err := in.db.SelectContext(ctx, &invDetail, querySelect, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return invDetail, nil
 }
 
 func (in *invoiceRepository) InsertInvoice(ctx context.Context, detail *entity.InvoiceDetailDB) error {
-	queryExecute := `INSERT INTO invoice(issue_date, subject, customer_id, due_date)
+	queryExecute := `INSERT INTO invoice(issue_date, subject, cust_id, due_date)
 	VALUES
 	(?, ?, ?, ?, ?)`
 	tx, err := in.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.IsolationLevel(4),
 	})
 	if err != nil {
-		return helper.NewCustomError(http.StatusInternalServerError, "unexpected error in creating transaction")
+		return err
 	}
 	_, err = tx.ExecContext(ctx, queryExecute, detail.IssueDate, detail.Subject, detail.CustomerID, detail.DueDate)
 	if err != nil {
@@ -57,17 +84,17 @@ func (in *invoiceRepository) UpdateInvoice(ctx context.Context, detail *entity.I
 	var items entity.ItemsDB
 
 	querySelectIDInvoice := `SELECT * FROM invoice
-	WHERE id = ? AND customer_id = ?`
+	WHERE id = ?`
 
 	querySelectIDItem := `SELECT * FROM items
 	WHERE id = ?`
 
-	err := in.db.SelectContext(ctx, &dbInvoice, querySelectIDInvoice, detail.ID, detail.CustomerID)
+	err := in.db.SelectContext(ctx, &dbInvoice, querySelectIDInvoice, detail.ID)
 	if err != nil {
 		return helper.NewCustomError(http.StatusBadRequest, "cannot find the requested ")
 	}
 
-	err = in.db.SelectContext(ctx, &items, querySelectIDItem, detail.ID, detail.CustomerID)
+	err = in.db.SelectContext(ctx, &items, querySelectIDItem, detail.ID)
 
 	if err != nil {
 		return helper.NewCustomError(http.StatusBadRequest, "cannot find the requested ")
