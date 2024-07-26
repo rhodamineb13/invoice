@@ -10,11 +10,6 @@ type configEnv struct {
 	User          string `mapstructure:"DB_USER"`
 	Password      string `mapstructure:"DB_PASSWORD"`
 	DBname        string `mapstructure:"DB_NAME"`
-	Issuer        string `mapstructure:"ISSUER"`
-	LibSecretKey  string `mapstructure:"SECRET_KEY"`
-	Duration      int    `mapstructure:"EXPIRY"`
-	AdminEmail    string `mapstructure:"ADMIN_EMAIL"`
-	AdminPassword string `mapstructure:"ADMIN_PASSWORD"`
 }
 
 var config = NewConfig()
