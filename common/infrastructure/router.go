@@ -2,14 +2,15 @@ package infrastructure
 
 import (
 	"context"
-	"errors"
 	"invoice/handler"
 	"invoice/repository"
 	"invoice/service"
 	"log"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -44,20 +45,19 @@ func newRouter() *gin.Engine {
 }
 
 func gracefulShutdown(srv *http.Server) {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
+	quit := make(chan os.Signal, 1)
+	// kill (no param) default send syscall.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall. SIGKILL but can"t be catch, so don't need add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
 
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("listen and serve returned err: %v", err)
-		}
-	}()
-
-	<-ctx.Done()
-	log.Println("got interruption signal")
-	if err := srv.Shutdown(context.TODO()); err != nil {
-		log.Printf("server shutdown returned an err: %v\n", err)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server Shutdown:", err)
 	}
-
-	log.Println("final")
+	// catching ctx.Done(). timeout of 5 seconds.
+	log.Println("Server exiting")
 }

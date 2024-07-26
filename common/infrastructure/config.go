@@ -9,7 +9,7 @@ type configEnv struct {
 	Port          string `mapstructure:"DB_PORT"`
 	User          string `mapstructure:"DB_USER"`
 	Password      string `mapstructure:"DB_PASSWORD"`
-	DBname        string `mapstructure:"DB_NAME"`
+	DBName        string `mapstructure:"DB_NAME"`
 }
 
 var config = NewConfig()

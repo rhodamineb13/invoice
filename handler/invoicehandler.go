@@ -2,6 +2,7 @@ package handler
 
 import (
 	"invoice/common/dto"
+	"invoice/helper"
 	"invoice/service"
 	"net/http"
 	"strconv"
@@ -20,7 +21,21 @@ func NewInvoiceHandler(inv service.InvoiceService) *InvoiceHandler {
 }
 
 func (i *InvoiceHandler) GetAllInvoice(c *gin.Context) {
-	lists, err := i.invoiceService.InvoiceIndex(c)
+	pageStr := c.Query("page")
+	limitStr := c.Query("limit")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		_ = c.Error(helper.NewCustomError(http.StatusBadRequest, "invalid page"))
+		return
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		_ = c.Error(helper.NewCustomError(http.StatusBadRequest, "invalid page limit"))
+	}
+
+	lists, err := i.invoiceService.InvoiceIndex(c, page, limit)
 	if err != nil {
 		_ = c.Error(err)
 		return

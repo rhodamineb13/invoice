@@ -16,7 +16,7 @@ type invoiceService struct {
 }
 
 type InvoiceService interface {
-	InvoiceIndex(context.Context) ([]dto.InvoiceListsDTO, error)
+	InvoiceIndex(context.Context, int, int) ([]dto.InvoiceListsDTO, error)
 	InvoiceByID(context.Context, int) (*dto.InvoiceDetailDTO, error)
 	AddInvoice(context.Context, *dto.InvoiceDetailDTO) error
 	EditInvoice(context.Context, *dto.InvoiceDetailDTO) error
@@ -28,8 +28,8 @@ func NewInvoiceService(inv repository.InvoiceRepository) InvoiceService {
 	}
 }
 
-func (in *invoiceService) InvoiceIndex(ctx context.Context) ([]dto.InvoiceListsDTO, error) {
-	lists, err := in.invoiceRepository.GetInvoice(ctx)
+func (in *invoiceService) InvoiceIndex(ctx context.Context, page int, limit int) ([]dto.InvoiceListsDTO, error) {
+	lists, err := in.invoiceRepository.GetInvoice(ctx, page, limit)
 	if err != nil {
 		listsDTO := []dto.InvoiceListsDTO{}
 		for _, invoice := range lists {
@@ -62,7 +62,6 @@ func (in *invoiceService) InvoiceByID(ctx context.Context, id int) (*dto.Invoice
 			IssueDate: invEntity.IssueDate,
 			Subject:   invEntity.Subject,
 			DueDate:   invEntity.DueDate,
-			Address:   invEntity.Address,
 		}
 		return invDTO, nil
 	}
@@ -75,7 +74,6 @@ func (in *invoiceService) AddInvoice(ctx context.Context, detail *dto.InvoiceDet
 		IssueDate: detail.IssueDate,
 		Subject:   detail.Subject,
 		DueDate:   detail.DueDate,
-		Address:   detail.Address,
 	}
 	if err := in.invoiceRepository.InsertInvoice(ctx, invEntity); err != nil {
 		return helper.NewCustomError(http.StatusInternalServerError, "unexpected error in adding invoice")
@@ -90,7 +88,6 @@ func (in *invoiceService) EditInvoice(ctx context.Context, detail *dto.InvoiceDe
 		IssueDate: detail.IssueDate,
 		Subject:   detail.Subject,
 		DueDate:   detail.DueDate,
-		Address:   detail.Address,
 	}
 
 	if err := in.invoiceRepository.UpdateInvoice(ctx, invEntity); err != nil {
