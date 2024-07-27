@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS orders(
+    id BIGINT NOT NULL AUTO_INCREMENT ,
+    invoice_id BIGINT NOT NULL,
+    item_id BIGINT NOT NULL,
+    qty BIGINT NOT NULL,
+    PRIMARY KEY (id)
+);

@@ -36,10 +36,10 @@ func newRouter() *gin.Engine {
 	r.Use()
 
 	inv := r.Group("/invoices")
-	inv.GET("/", invHandler.GetAllInvoice)
-	inv.GET("/:id", invHandler.GetInvoiceByID)
-	inv.POST("/", invHandler.NewInvoice)
-	inv.PUT("/", invHandler.EditInvoice)
+	inv.GET("", invHandler.GetAllInvoices)
+	inv.GET("/:id", invHandler.SelectInvoiceByID)
+	inv.POST("", invHandler.NewInvoice)
+	inv.PUT("", invHandler.EditInvoice)
 
 	return r
 }

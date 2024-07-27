@@ -12,26 +12,17 @@ type InvoiceListsDTO struct {
 	Status     string    `json:"status"`
 }
 
-type Pagination struct {
-	Page  int
-	Limit int
-}
-
 type InvoiceDetailDTO struct {
-	ID          int       `json:"id"`
-	IssueDate   time.Time `json:"issue_date"`
-	Subject     string    `json:"subject"`
-	DueDate     time.Time `json:"due_date"`
-	Address     string    `json:"address"`
-	Summary     InvoiceSummaryDTO
-	DetailItems []ItemsDTO
-}
-
-type InvoiceSummaryDTO struct {
-	TotalItems int     `json:"total_item(s)"`
-	SubTotal   float32 `json:"subtotal"`
-	Tax        int     `json:"tax"`
-	GrandTotal float32 `json:"grand_total"`
+	ID         int       `json:"id"`
+	IssueDate  time.Time `json:"issue_date"`
+	Subject    string    `json:"subject"`
+	DueDate    time.Time `json:"due_date"`
+	Address    string    `json:"address"`
+	TotalItems int       `json:"total_item(s)"`
+	SubTotal   float32   `json:"subtotal"`
+	Tax        int       `json:"tax"`
+	GrandTotal float32   `json:"grand_total"`
+	Items      []*ItemsDTO
 }
 
 type ItemsDTO struct {

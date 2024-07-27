@@ -20,7 +20,7 @@ func NewInvoiceHandler(inv service.InvoiceService) *InvoiceHandler {
 	}
 }
 
-func (i *InvoiceHandler) GetAllInvoice(c *gin.Context) {
+func (i *InvoiceHandler) GetAllInvoices(c *gin.Context) {
 	pageStr := c.Query("page")
 	limitStr := c.Query("limit")
 
@@ -35,7 +35,7 @@ func (i *InvoiceHandler) GetAllInvoice(c *gin.Context) {
 		_ = c.Error(helper.NewCustomError(http.StatusBadRequest, "invalid page limit"))
 	}
 
-	lists, err := i.invoiceService.InvoiceIndex(c, page, limit)
+	lists, err := i.invoiceService.GetAllInvoices(c, page, limit)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -43,7 +43,7 @@ func (i *InvoiceHandler) GetAllInvoice(c *gin.Context) {
 	c.JSON(http.StatusOK, lists)
 }
 
-func (i *InvoiceHandler) GetInvoiceByID(c *gin.Context) {
+func (i *InvoiceHandler) SelectInvoiceByID(c *gin.Context) {
 	idString := c.Param("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
@@ -51,7 +51,7 @@ func (i *InvoiceHandler) GetInvoiceByID(c *gin.Context) {
 		return
 	}
 
-	inv, err := i.invoiceService.InvoiceByID(c, id)
+	inv, err := i.invoiceService.SelectInvoiceByID(c, id)
 	if err != nil {
 		_ = c.Error(err)
 		return

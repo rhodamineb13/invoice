@@ -1,0 +1,3 @@
+ALTER TABLE invoices
+DROP CONSTRAINT FK_invoice_id,
+DROP CONSTRAINT FK_item_id;

@@ -16,8 +16,8 @@ type invoiceService struct {
 }
 
 type InvoiceService interface {
-	InvoiceIndex(context.Context, int, int) ([]dto.InvoiceListsDTO, error)
-	InvoiceByID(context.Context, int) (*dto.InvoiceDetailDTO, error)
+	GetAllInvoices(context.Context, int, int) ([]dto.InvoiceListsDTO, error)
+	SelectInvoiceByID(context.Context, int) (*dto.InvoiceDetailDTO, error)
 	AddInvoice(context.Context, *dto.InvoiceDetailDTO) error
 	EditInvoice(context.Context, *dto.InvoiceDetailDTO) error
 }
@@ -28,7 +28,7 @@ func NewInvoiceService(inv repository.InvoiceRepository) InvoiceService {
 	}
 }
 
-func (in *invoiceService) InvoiceIndex(ctx context.Context, page int, limit int) ([]dto.InvoiceListsDTO, error) {
+func (in *invoiceService) GetAllInvoices(ctx context.Context, page int, limit int) ([]dto.InvoiceListsDTO, error) {
 	lists, err := in.invoiceRepository.GetInvoice(ctx, page, limit)
 	if err == nil {
 		listsDTO := []dto.InvoiceListsDTO{}
@@ -50,18 +50,32 @@ func (in *invoiceService) InvoiceIndex(ctx context.Context, page int, limit int)
 	case sql.ErrNoRows:
 		return nil, helper.NewCustomError(http.StatusOK, "there are no invoices")
 	default:
-		return nil, helper.NewCustomError(http.StatusInternalServerError, "unexpected error")
+		return nil, helper.NewCustomError(http.StatusInternalServerError, err.Error())
 	}
 }
 
-func (in *invoiceService) InvoiceByID(ctx context.Context, id int) (*dto.InvoiceDetailDTO, error) {
-	if invEntity, err := in.invoiceRepository.SelectInvoice(ctx, id); err == nil {
+func (in *invoiceService) SelectInvoiceByID(ctx context.Context, id int) (*dto.InvoiceDetailDTO, error) {
+	if invEntity, err := in.invoiceRepository.SearchInvoice(ctx, id); err == nil {
 		invDTO := &dto.InvoiceDetailDTO{
-			ID:        invEntity.ID,
-			IssueDate: invEntity.IssueDate,
-			Subject:   invEntity.Subject,
-			DueDate:   invEntity.DueDate,
+			ID:         invEntity.ID,
+			IssueDate:  invEntity.IssueDate,
+			Subject:    invEntity.Subject,
+			DueDate:    invEntity.DueDate,
+			TotalItems: invEntity.TotalItems,
+			SubTotal:   invEntity.SubTotal,
+			Tax:        10,
+			GrandTotal: invEntity.GrandTotal,
 		}
+		for _, items := range invEntity.Orders {
+			item := &dto.ItemsDTO{
+				Item:      items.ItemName,
+				Qty:       items.Qty,
+				UnitPrice: items.UnitPrice,
+				Amount:    items.Amount,
+			}
+			invDTO.Items = append(invDTO.Items, item)
+		}
+
 		return invDTO, nil
 	}
 
@@ -69,7 +83,7 @@ func (in *invoiceService) InvoiceByID(ctx context.Context, id int) (*dto.Invoice
 }
 
 func (in *invoiceService) AddInvoice(ctx context.Context, detail *dto.InvoiceDetailDTO) error {
-	invEntity := &entity.InvoiceDetailDB{
+	invEntity := &entity.InvoiceInsertDB{
 		IssueDate: detail.IssueDate,
 		Subject:   detail.Subject,
 		DueDate:   detail.DueDate,
