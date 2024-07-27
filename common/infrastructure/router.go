@@ -41,6 +41,7 @@ func newRouter() *gin.Engine {
 	inv.GET("", invHandler.GetAllInvoices)
 	inv.GET("/:id", invHandler.SelectInvoiceByID)
 	inv.GET("/:id/items", ordHandler.DisplayOrders)
+	inv.POST("/:id/", ordHandler.AddNewOrder)
 	inv.PUT("/:id/items/:itemid", ordHandler.EditOrder)
 	inv.DELETE("/:id/items/:itemid", ordHandler.DeleteOrder)
 	inv.POST("", invHandler.NewInvoice)

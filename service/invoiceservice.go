@@ -34,12 +34,13 @@ func (in *invoiceService) GetAllInvoices(ctx context.Context, page int, limit in
 		listsDTO := []dto.InvoiceListsDTO{}
 		for _, invoice := range lists {
 			invDTO := dto.InvoiceListsDTO{
-				ID:        invoice.ID,
-				IssueDate: invoice.IssueDate,
-				Subject:   invoice.Subject,
-				Customer:  invoice.CustomerName,
-				DueDate:   invoice.DueDate,
-				Status:    invoice.Status,
+				ID:         invoice.ID,
+				IssueDate:  invoice.IssueDate,
+				Subject:    invoice.Subject,
+				Customer:   invoice.CustomerName,
+				TotalItems: invoice.TotalItems,
+				DueDate:    invoice.DueDate,
+				Status:     invoice.Status,
 			}
 			listsDTO = append(listsDTO, invDTO)
 		}
@@ -66,15 +67,15 @@ func (in *invoiceService) SelectInvoiceByID(ctx context.Context, id int) (*dto.I
 			Tax:        10,
 			GrandTotal: invEntity.GrandTotal,
 		}
-		for _, items := range invEntity.Orders {
-			item := dto.OrdersDTO{
-				ItemName:  items.ItemName,
-				Qty:       items.Qty,
-				UnitPrice: items.UnitPrice,
-				Amount:    items.Amount,
-			}
-			invDTO.Orders = append(invDTO.Orders, item)
-		}
+		// for _, items := range invEntity.Orders {
+		// 	item := dto.OrdersDTO{
+		// 		ItemName:  items.ItemName,
+		// 		Qty:       items.Qty,
+		// 		UnitPrice: items.UnitPrice,
+		// 		Amount:    items.Amount,
+		// 	}
+		// 	invDTO.Orders = append(invDTO.Orders, item)
+		// }
 
 		return invDTO, nil
 	}
@@ -98,7 +99,6 @@ func (in *invoiceService) AddInvoice(ctx context.Context, detail *dto.InvoiceIns
 		Subject:    detail.Subject,
 		DueDate:    due,
 		Address:    detail.Address,
-		Status:     detail.Status,
 		Orders:     make([]entity.OrderDB, 0),
 	}
 	for _, ord := range detail.Orders {
@@ -111,7 +111,7 @@ func (in *invoiceService) AddInvoice(ctx context.Context, detail *dto.InvoiceIns
 	}
 
 	if err := in.invoiceRepository.InsertInvoice(ctx, invEntity); err != nil {
-		return helper.NewCustomError(http.StatusInternalServerError, fmt.Sprintf("unexpected error in adding invoice: %w", err))
+		return helper.NewCustomError(http.StatusInternalServerError, fmt.Sprintf("unexpected error in adding invoice: %s", err))
 	}
 
 	return nil

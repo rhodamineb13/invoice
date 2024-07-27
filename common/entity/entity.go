@@ -32,7 +32,6 @@ type InvoiceDetailDB struct {
 	TotalItems   int       `db:"total_items"`
 	SubTotal     float32   `db:"subtotal"`
 	GrandTotal   float32   `db:"grand_total"`
-	Orders       []OrderDB
 }
 
 type InvoiceGetDB struct {

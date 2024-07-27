@@ -31,7 +31,6 @@ type InvoiceInsertDTO struct {
 	ID        int         `json:"cust_id"`
 	DueDate   string      `json:"due_date"`
 	Address   string      `json:"address"`
-	Status    string      `json:"status"`
 	Orders    []OrdersDTO `json:"orders"`
 }
 

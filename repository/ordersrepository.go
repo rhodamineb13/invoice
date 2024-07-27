@@ -54,7 +54,7 @@ func (o *orderRepository) Insert(ctx context.Context, invID int, ord *entity.Ord
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, queryInsert, ord.ItemID, ord.Qty)
+	_, err = tx.ExecContext(ctx, queryInsert, invID, ord.ItemID, ord.Qty)
 	if err != nil {
 		return err
 	}
@@ -87,6 +87,11 @@ func (o *orderRepository) Update(ctx context.Context, ordID int, update *entity.
 	tx, err := o.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.IsolationLevel(4),
 	})
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
 
 	_, err = tx.ExecContext(ctx, queryUpdateOrder, update.ItemID, update.Qty)
 	if err != nil {
