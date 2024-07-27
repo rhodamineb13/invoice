@@ -22,12 +22,31 @@ type InvoiceDetailDTO struct {
 	SubTotal   float32   `json:"subtotal"`
 	Tax        int       `json:"tax"`
 	GrandTotal float32   `json:"grand_total"`
-	Items      []*ItemsDTO
+	Orders     []OrdersDTO
 }
 
-type ItemsDTO struct {
-	Item      string  `json:"item"`
+type InvoiceInsertDTO struct {
+	IssueDate string      `json:"issue_date"`
+	Subject   string      `json:"subject"`
+	ID        int         `json:"cust_id"`
+	DueDate   string      `json:"due_date"`
+	Address   string      `json:"address"`
+	Status    string      `json:"status"`
+	Orders    []OrdersDTO `json:"orders"`
+}
+
+type OrdersDTO struct {
+	ItemID    int     `json:"item_id,omitempty"`
+	ItemName  string  `json:"item_name,omitempty"`
 	Qty       int     `json:"qty"`
-	UnitPrice float32 `json:"unit_price"`
-	Amount    float32 `json:"amount"`
+	UnitPrice float32 `json:"unit_price,omitempty"`
+	Amount    float32 `json:"amount,omitempty"`
+}
+
+type InvoiceUpdateDTO struct {
+	IssueDate string `json:"issue_date,omitempty"`
+	Subject   string `json:"subject,omitempty"`
+	DueDate   string `json:"due_date,omitempty"`
+	Qty       int    `json:"qty,omitempty"`
+	Status    string `json:"status,omitempty"`
 }

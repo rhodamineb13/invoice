@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"invoice/common/entity"
+	"invoice/helper"
+	"net/http"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -18,7 +20,7 @@ type InvoiceRepository interface {
 	GetInvoice(context.Context, int, int) ([]entity.InvoiceGetDB, error)
 	SearchInvoice(context.Context, int) (*entity.InvoiceDetailDB, error)
 	InsertInvoice(context.Context, *entity.InvoiceInsertDB) error
-	UpdateInvoice(context.Context, *entity.InvoiceDetailDB) error
+	UpdateInvoice(context.Context, int, *entity.InvoiceUpdateDB) error
 }
 
 func NewInvoiceRepository(db *sqlx.DB) InvoiceRepository {
@@ -52,21 +54,13 @@ func (in *invoiceRepository) GetInvoice(ctx context.Context, page int, limit int
 func (in *invoiceRepository) SearchInvoice(ctx context.Context, id int) (*entity.InvoiceDetailDB, error) {
 	var invDetail *entity.InvoiceDetailDB
 
-	querySelect := `SELECT in.id, in.issue_date, in.subject, c.name AS cust_name, c.address, in.due_date, COUNT(o.ID) as total_items, SUM(o.qty*o.amount) as subtotal, SUM(o.qty*o.amount)*0.9 as grand_total
+	querySelect := `SELECT in.id, in.cust_id, in.issue_date, in.subject, c.name AS cust_name, c.address, in.due_date, COUNT(o.ID) as total_items, SUM(o.qty*o.amount) as subtotal, SUM(o.qty*o.amount)*0.9 as grand_total
 	FROM invoice in
 	INNER JOIN (SELECT * FROM order WHERE invoice_id = $) o
-	INNER JOIN customer c ON in.customer_id = c.id;`
+	INNER JOIN customer c ON in.cust_id = c.id;`
 
 	err := in.db.SelectContext(ctx, &invDetail, querySelect, id)
 	if err != nil {
-		return nil, err
-	}
-
-	queryGetItems := `SELECT o.item_name, it.unit_price AS unit_price, o.qty, (it.unit_price * o.qty) AS amount
-	FROM orders o
-	INNER JOIN items it ON it.id = o.item_id`
-
-	if err := in.db.GetContext(ctx, &invDetail.Orders, queryGetItems); err != nil {
 		return nil, err
 	}
 
@@ -74,21 +68,10 @@ func (in *invoiceRepository) SearchInvoice(ctx context.Context, id int) (*entity
 }
 
 func (in *invoiceRepository) InsertInvoice(ctx context.Context, ins *entity.InvoiceInsertDB) error {
-	custID, err := in.checkCustomerIfExists(ctx, ins.CustomerName, ins.Address)
-	if err != nil {
-		return err
-	}
-
-	ins.CustomerID = custID
 
 	queryInsertInvoice := `INSERT INTO invoices(issue_date, subject, cust_id, due_date, status)
 	VALUES
-	(?, ?, ?, ?, ?);
-	SELECT LAST_INSERT_ID();`
-
-	queryInsertOrders := `INSERT INTO orders(invoice_id, item_id, qty)
-	VALUES
-	(?, ?, ?)`
+	(?, ?, ?, ?, 'unpaid');`
 
 	tx, err := in.db.BeginTx(ctx, &sql.TxOptions{
 		Isolation: sql.IsolationLevel(4),
@@ -98,33 +81,82 @@ func (in *invoiceRepository) InsertInvoice(ctx context.Context, ins *entity.Invo
 		return err
 	}
 
-	res, err1 := tx.ExecContext(ctx, queryInsertInvoice, ins.IssueDate, ins.Subject, ins.CustomerID, ins.DueDate, ins.Status)
-	var err2 error
-	for _, order := range ins.Orders {
-		invID, _ := res.LastInsertId()
-		var itemID int
-		querySelectItems := `SELECT id FROM items WHERE name = ?`
-		err := in.db.SelectContext(ctx, &itemID, querySelectItems, order.ItemName)
+	_, err1 := tx.ExecContext(ctx, queryInsertInvoice, ins.IssueDate, ins.Subject, ins.CustomerID, ins.DueDate)
+	if err1 == nil {
+		tx.Commit()
+		var invID int
+		querySelectInvoice := `SELECT id FROM invoices WHERE cust_id = ?`
+
+		if err := in.db.SelectContext(ctx, &invID, querySelectInvoice, ins.CustomerID); err != nil {
+			return helper.NewCustomError(http.StatusInternalServerError, fmt.Sprintf("unexpected error: customer id not found"))
+		}
+		rows, err2 := tx.QueryContext(ctx, `SELECT id FROM invoices WHERE issue_date = ? AND subject = ? AND cust_id = ? AND due_date = ? AND status = 'unpaid'`,
+			ins.IssueDate, ins.Subject, ins.CustomerID, ins.DueDate)
 		if err != nil {
-			err2 = err
-			break
+			tx.Rollback()
+			return err2
 		}
 
-		_, err2 = tx.ExecContext(ctx, queryInsertOrders, invID, itemID, order.Qty)
-	}
-	if err1 != nil || err2 != nil {
-		tx.Rollback()
-		if err1 != nil {
-			return err1
+		queryNewOrder := `INSERT INTO ORDER(invoice_id, item_id, qty)
+		VALUES
+		(?, ?, ?)`
+
+		rows.Scan(&invID)
+		for _, ord := range ins.Orders {
+			_, err := tx.ExecContext(ctx, queryNewOrder, invID, ord.ItemID, ord.Qty)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
-		return err2
+		tx.Commit()
+		return nil
+	}
+
+	return err1
+}
+
+func (in *invoiceRepository) UpdateInvoice(ctx context.Context, invID int, update *entity.InvoiceUpdateDB) error {
+	detail, err := in.SearchInvoice(ctx, invID)
+	if err != nil {
+		return err
+	}
+
+	if update.IssueDate.IsZero() {
+		update.IssueDate = detail.IssueDate
+	}
+
+	if update.DueDate.IsZero() {
+		update.DueDate = detail.DueDate
+	}
+
+	if update.Subject == "" {
+		update.Subject = detail.Subject
+	}
+
+	if update.CustomerID == 0 {
+		update.CustomerID = detail.CustomerID
+	}
+
+	queryUpdateInvoice := `UPDATE invoices
+	SET issue_date = ?, subject = ?, cust_id = ?, due_date = ?
+	WHERE id = ?`
+
+	tx, err := in.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.IsolationLevel(4),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, queryUpdateInvoice, update.IssueDate, update.Subject, update.CustomerID, update.DueDate, invID)
+	if err != nil {
+		tx.Rollback()
+		return err
 	}
 	tx.Commit()
 
-	return nil
-}
-
-func (in *invoiceRepository) UpdateInvoice(ctx context.Context, update *entity.InvoiceDetailDB) error {
 	return nil
 }
 

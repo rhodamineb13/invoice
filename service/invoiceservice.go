@@ -18,8 +18,8 @@ type invoiceService struct {
 type InvoiceService interface {
 	GetAllInvoices(context.Context, int, int) ([]dto.InvoiceListsDTO, error)
 	SelectInvoiceByID(context.Context, int) (*dto.InvoiceDetailDTO, error)
-	AddInvoice(context.Context, *dto.InvoiceDetailDTO) error
-	EditInvoice(context.Context, *dto.InvoiceDetailDTO) error
+	AddInvoice(context.Context, *dto.InvoiceInsertDTO) error
+	EditInvoice(context.Context, int, *dto.InvoiceUpdateDTO) error
 }
 
 func NewInvoiceService(inv repository.InvoiceRepository) InvoiceService {
@@ -67,13 +67,13 @@ func (in *invoiceService) SelectInvoiceByID(ctx context.Context, id int) (*dto.I
 			GrandTotal: invEntity.GrandTotal,
 		}
 		for _, items := range invEntity.Orders {
-			item := &dto.ItemsDTO{
-				Item:      items.ItemName,
+			item := dto.OrdersDTO{
+				ItemName:  items.ItemName,
 				Qty:       items.Qty,
 				UnitPrice: items.UnitPrice,
 				Amount:    items.Amount,
 			}
-			invDTO.Items = append(invDTO.Items, item)
+			invDTO.Orders = append(invDTO.Orders, item)
 		}
 
 		return invDTO, nil
@@ -82,31 +82,62 @@ func (in *invoiceService) SelectInvoiceByID(ctx context.Context, id int) (*dto.I
 	return nil, helper.NewCustomError(http.StatusNotFound, "invoice not found")
 }
 
-func (in *invoiceService) AddInvoice(ctx context.Context, detail *dto.InvoiceDetailDTO) error {
-	invEntity := &entity.InvoiceInsertDB{
-		IssueDate: detail.IssueDate,
-		Subject:   detail.Subject,
-		DueDate:   detail.DueDate,
+func (in *invoiceService) AddInvoice(ctx context.Context, detail *dto.InvoiceInsertDTO) error {
+	issue, err := helper.ParseTime(detail.IssueDate)
+	if err != nil {
+		return helper.NewCustomError(http.StatusBadRequest, fmt.Sprintf("fail to parse time format %s", detail.IssueDate))
 	}
+
+	due, err := helper.ParseTime(detail.DueDate)
+	if err != nil {
+		return helper.NewCustomError(http.StatusBadRequest, fmt.Sprintf("fail to parse time format %s", detail.DueDate))
+	}
+	invEntity := &entity.InvoiceInsertDB{
+		IssueDate:  issue,
+		CustomerID: detail.ID,
+		Subject:    detail.Subject,
+		DueDate:    due,
+		Address:    detail.Address,
+		Status:     detail.Status,
+		Orders:     make([]entity.OrderDB, 0),
+	}
+	for _, ord := range detail.Orders {
+		ordDB := entity.OrderDB{
+			ItemID: ord.ItemID,
+			Qty:    ord.Qty,
+		}
+
+		invEntity.Orders = append(invEntity.Orders, ordDB)
+	}
+
 	if err := in.invoiceRepository.InsertInvoice(ctx, invEntity); err != nil {
-		return helper.NewCustomError(http.StatusInternalServerError, "unexpected error in adding invoice")
+		return helper.NewCustomError(http.StatusInternalServerError, fmt.Sprintf("unexpected error in adding invoice: %w", err))
 	}
 
 	return nil
 }
 
-func (in *invoiceService) EditInvoice(ctx context.Context, detail *dto.InvoiceDetailDTO) error {
-	invEntity := &entity.InvoiceDetailDB{
-		ID:        detail.ID,
-		IssueDate: detail.IssueDate,
-		Subject:   detail.Subject,
-		DueDate:   detail.DueDate,
+func (in *invoiceService) EditInvoice(ctx context.Context, invID int, up *dto.InvoiceUpdateDTO) error {
+	issue, err := helper.ParseTime(up.IssueDate)
+	if err != nil {
+		return helper.NewCustomError(http.StatusBadRequest, fmt.Sprintf("fail to parse time format %s", up.IssueDate))
 	}
 
-	if err := in.invoiceRepository.UpdateInvoice(ctx, invEntity); err != nil {
+	due, err := helper.ParseTime(up.DueDate)
+	if err != nil {
+		return helper.NewCustomError(http.StatusBadRequest, fmt.Sprintf("fail to parse time format %s", up.DueDate))
+	}
+
+	invEntity := &entity.InvoiceUpdateDB{
+		IssueDate: issue,
+		Subject:   up.Subject,
+		DueDate:   due,
+	}
+
+	if err := in.invoiceRepository.UpdateInvoice(ctx, invID, invEntity); err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			return helper.NewCustomError(http.StatusBadRequest, fmt.Sprintf("can't edit the requested invoice with ID %d", detail.ID))
+			return helper.NewCustomError(http.StatusBadRequest, fmt.Sprintf("can't edit the requested invoice with ID %d", invID))
 		default:
 			return helper.NewCustomError(http.StatusInternalServerError, "unexpected error in updating invoice")
 		}

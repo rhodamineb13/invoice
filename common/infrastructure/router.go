@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"context"
 	"invoice/handler"
+	"invoice/middleware"
 	"invoice/repository"
 	"invoice/service"
 	"log"
@@ -30,14 +31,18 @@ func Run() {
 }
 
 func newRouter() *gin.Engine {
-	invHandler := handler.NewInvoiceHandler(service.NewInvoiceService(repository.NewInvoiceRepository(newDBConnection())))
+	invHandler := handler.NewInvoiceHandler(service.NewInvoiceService(repository.NewInvoiceRepository(db)))
+	ordHandler := handler.NewOrderHandler(service.NewOrderService(repository.NewOrderRepository(db)))
 
 	r := gin.Default()
-	r.Use()
+	r.Use(middleware.ErrorCheck())
 
 	inv := r.Group("/invoices")
 	inv.GET("", invHandler.GetAllInvoices)
 	inv.GET("/:id", invHandler.SelectInvoiceByID)
+	inv.GET("/:id/items", ordHandler.DisplayOrders)
+	inv.PUT("/:id/items/:itemid", ordHandler.EditOrder)
+	inv.DELETE("/:id/items/:itemid", ordHandler.DeleteOrder)
 	inv.POST("", invHandler.NewInvoice)
 	inv.PUT("", invHandler.EditInvoice)
 

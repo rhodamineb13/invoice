@@ -11,6 +11,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+var db *sqlx.DB = newDBConnection()
+
 func newDBConnection() *sqlx.DB {
 	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", config.User, config.Password, config.Host, config.Port, config.DBName))
 	if err != nil {
